@@ -1,0 +1,7 @@
+- name: Yum install redsocks in REL systems
+  yum: 
+      name=redsocks 
+      state=latest 
+      update_cache=yes
+
+

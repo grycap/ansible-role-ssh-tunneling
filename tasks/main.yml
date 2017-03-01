@@ -1,0 +1,3 @@
+- name: Include "{{ssh_tunnels_node}}" SSH Tunnels recipe
+  include: "{{ssh_tunnels_node}}.yaml"
+

@@ -1,0 +1,68 @@
+- shell: sed -i "/{{front_ip}}/ s/.*/{{hostvars[groups['front'][0]]['IM_NODE_PUBLIC_IP']}} {{front_ip}}.localdomain {{front_ip}}/g" /etc/hosts 
+
+- local_action: shell nohup /tmp/sshconnect.sh {{ansible_ssh_user}}@{{IM_NODE_HOSTNAME}} & 
+
+- name: Include "{{ansible_os_family}}" tasks
+  include: "{{ansible_os_family}}.yml"
+  
+- copy:
+	content: |
+		#! /bin/bash
+		test -f /tmp/.redsocksetup0 && exit
+		service redsocks stop || true
+		echo 'base { 
+			log_debug = off;
+			log_info = on;
+			log = "syslog:daemon";
+			daemon = on;
+			user = redsocks;
+			group = redsocks;
+			redirector = iptables;
+		}
+		redsocks {
+			local_ip = 127.0.0.1;
+			local_port = 12345;
+			ip = 127.0.0.1;
+			port = 9998;
+			type = socks5;
+		}' > /etc/redsocks.conf
+		port="12346"
+		UDPPORTS="`echo '{{front_ports}}' | awk 'BEGIN {RS=","; FS="/"} /udp/ {print $1}'`"
+		for p in $UDPPORTS; do
+			echo "redudp {
+					local_ip = 127.0.0.1;
+					local_port = $port;
+					ip = 127.0.0.1;
+					port = 9998;
+					dest_ip = `awk '/{{front_ip}}/ {print \$1}' /etc/hosts`;
+					dest_port = $p;
+					udp_timeout = 30;
+					udp_timeout_stream = 180;
+				}"
+			port="$(( port+1 ))"
+		done >> /etc/redsocks.conf
+		chgrp ssh /usr/sbin/sshd
+		chmod g+s /usr/sbin/sshd
+		touch /tmp/.redsocksetup0
+		killall -9 sshd
+		service ssh start
+	dest: /tmp/redsocksetup0.sh
+	mode: 0755
+
+- copy:
+	content: |
+		#! /bin/bash
+		test -f /tmp/.redsocksetup1 && exit
+		/sbin/iptables -t nat -A OUTPUT -p tcp -d {{front_ip}} -m owner ! --gid-owner ssh -j REDIRECT --to-ports 12345;
+		port="12346";
+		for p in $UDPPORTS; do
+			/sbin/iptables -t nat -A OUTPUT -p udp --dport $p -d {{front_ip}} -m owner ! --gid-owner ssh -j REDIRECT --to-ports $port;
+			port="$(( port+1 ))";
+		done
+		/usr/sbin/redsocks -c /etc/redsocks.conf
+		touch /tmp/.redsocksetup1
+	dest: /tmp/redsocksetup1.sh
+	mode: 0755
+
+- command: /tmp/redsocksetup0.sh
+- command: /tmp/redsocksetup1.sh

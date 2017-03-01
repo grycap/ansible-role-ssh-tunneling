@@ -1,0 +1,5 @@
+---
+ssh_tunnels_node: "front"
+front_ip: "127.0.0.1"
+front_ports: ""
+

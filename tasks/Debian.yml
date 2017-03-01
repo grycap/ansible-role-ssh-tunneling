@@ -1,0 +1,7 @@
+- name: Install redsocks in Deb systems
+  apt: 
+      name={{ item }} 
+      update_cache=yes
+      state=present
+  with_items: 
+      - redsocks
