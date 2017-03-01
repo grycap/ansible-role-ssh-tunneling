@@ -10,8 +10,6 @@ galaxy_info:
     - trusty
   galaxy_tags: 
    - ssh
-   -tunneling
+   - tunneling
 
 dependencies: []
-
-
