@@ -4,7 +4,8 @@ SSH Tunneling
 =============
 
 Ansible role to create SSH tunnels between two hosts. It is used in EC3 to create hybrid clusters.
-This role allows connectivity between frontend and working nodes when frontend is behind a firewall by using SSH tunnels. Once established the tunnels, working nodes redirect traffic to the frontend throw the tunnel. For that it is installed redsocks and inserted some rules in IPTables. See: http://darkk.net.ru/redsocks/
+This role allows connectivity between frontend and working nodes when frontend is behind a firewall by using SSH tunnels. Once established the tunnels, working nodes redirect traffic to the frontend throw the tunnel. For that it is installed redsocks and inserted some rules in IPTables. See http://darkk.net.ru/redsocks/ for more information.
+
 Notice that only nodes that are deployed outside the Cloud provider that has deployed the front-end, need to configure SSH tunnels to connect with the cluster.
 
 Role Variables
