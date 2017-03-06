@@ -1,4 +1,4 @@
-- shell: sed -i "/{{front_ip}}/ s/.*/{{hostvars[groups['front'][0]]['IM_NODE_PUBLIC_IP']}} {{front_ip}}.localdomain {{front_ip}}/g" /etc/hosts 
+- shell: sed -i "/{{front_ip}}.localdomain/ s/.*/{{hostvars[groups['front'][0]]['IM_NODE_PUBLIC_IP']}} {{front_ip}}.localdomain {{front_ip}}/g" /etc/hosts 
 
 - local_action: shell nohup /tmp/sshconnect.sh {{ansible_ssh_user}}@{{IM_NODE_HOSTNAME}} & 
 
